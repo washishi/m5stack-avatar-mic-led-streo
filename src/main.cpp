@@ -6,6 +6,8 @@
 #include "fft.hpp"
 
 #define USE_MIC
+// LEDレベルメータを使用する;
+#define USE_FASTLED
 
 #ifdef USE_MIC
   // ---------- Mic sampling ----------
@@ -27,8 +29,55 @@
 
 #endif
 
+#ifdef USE_FASTLED
+#include <FastLED.h>
 
+  // How many leds in your strip?
+  #define NUM_LEDS 10
+  #if defined(ARDUINO_M5STACK_Core2)
+  #define DATA_PIN 25
+  #else
+  #define DATA_PIN 15
+  #endif
 
+// Define the array of leds
+CRGB leds[NUM_LEDS];
+CRGB led_table[NUM_LEDS/2] = {CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,CRGB::Red};
+
+void turn_off_led() {
+  // Now turn the LED off, then pause
+  for(int i=0;i<NUM_LEDS;i++) leds[i] = CRGB::Black;
+  FastLED.show();
+}
+
+void fill_led_buff(CRGB color) {
+  // Now turn the LED off, then pause
+  for(int i=0;i<NUM_LEDS;i++) leds[i] =  color;
+}
+
+void clear_led_buff() {
+  // Now turn the LED off, then pause
+  for(int i=0;i<NUM_LEDS;i++) leds[i] =  CRGB::Black;
+}
+
+void level_led(int level1, int level2) {
+  if(level1>NUM_LEDS/2) level1 = NUM_LEDS/2;
+  if(level2>NUM_LEDS/2) level2 = NUM_LEDS/2;
+  clear_led_buff();
+  for(int i=0;i<level1;i++){
+    leds[NUM_LEDS/2-1-i] = led_table[i];
+  }
+  for(int i=0;i<level2;i++){
+    leds[i+NUM_LEDS/2] = led_table[i];
+  }
+  FastLED.show();
+}
+#else
+void turn_off_led() {}
+// void fill_led_buff(CRGB color) {}
+void clear_led_buff() {}
+void level_led(int level1, int level2) {}
+#endif
 
 using namespace m5avatar;
 
@@ -109,6 +158,11 @@ void lipsync() {
     last_rotation_msec = millis();
   }
   avatar.setMouthOpenRatio(ratio);
+#ifdef USE_FASTLED
+   int led_level = (int)(ratio*5.0);
+   if(led_level>NUM_LEDS/2) led_level = NUM_LEDS/2;
+   level_led(led_level, led_level);
+#endif    
 }
 
 
@@ -196,6 +250,22 @@ void setup()
   avatar.setColorPalette(*cps[first_cps]);
   //avatar.addTask(lipsync, "lipsync");
   last_rotation_msec = millis();
+
+#ifdef USE_FASTLED
+  if (M5.getBoard() == m5::board_t::board_M5Stack)
+  {
+    FastLED.addLeds<SK6812, GPIO_NUM_15, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
+  }
+  else
+  if (M5.getBoard() == m5::board_t::board_M5StackCore2)
+  {
+    FastLED.addLeds<SK6812, GPIO_NUM_25, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
+  }
+  FastLED.setBrightness(32);
+  level_led(5, 5);
+  FastLED.show();
+#endif
+
 }
 
 uint32_t count = 0;
