@@ -261,11 +261,10 @@ void setup()
   {
     FastLED.addLeds<SK6812, GPIO_NUM_25, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
   }
-  FastLED.setBrightness(32);
+  FastLED.setBrightness(20);
   level_led(5, 5);
   FastLED.show();
 #endif
-
 }
 
 uint32_t count = 0;
