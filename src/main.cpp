@@ -8,6 +8,8 @@
 #define USE_MIC
 // LEDレベルメータを使用する;
 #define USE_FASTLED
+// HEX LEDをレベルメータとして使用する;
+//#define USE_HEX_LED
 
 #ifdef USE_MIC
   // ---------- Mic sampling ----------
@@ -33,16 +35,19 @@
 #include <FastLED.h>
 
   // How many leds in your strip?
+#ifdef USE_HEX_LED
+  #define NUM_LEDS 37
+#else
   #define NUM_LEDS 10
-  #if defined(ARDUINO_M5STACK_Core2)
-  #define DATA_PIN 25
-  #else
-  #define DATA_PIN 15
-  #endif
+#endif
+  // #if defined(ARDUINO_M5STACK_Core2)
+  // #define DATA_PIN 25
+  // #else
+  // #define DATA_PIN 15
+  // #endif
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
-CRGB led_table[NUM_LEDS/2] = {CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,CRGB::Red};
 
 void turn_off_led() {
   // Now turn the LED off, then pause
@@ -60,6 +65,9 @@ void clear_led_buff() {
   for(int i=0;i<NUM_LEDS;i++) leds[i] =  CRGB::Black;
 }
 
+#ifndef USE_HEX_LED
+CRGB led_table[NUM_LEDS/2] = {CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,CRGB::Red};
+//CRGB color_table[5] = {CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,CRGB::Red};
 void level_led(int level1, int level2) {
   if(level1>NUM_LEDS/2) level1 = NUM_LEDS/2;
   if(level2>NUM_LEDS/2) level2 = NUM_LEDS/2;
@@ -72,6 +80,84 @@ void level_led(int level1, int level2) {
   }
   FastLED.show();
 }
+#else
+CRGB hex_color_table[6][NUM_LEDS] = {
+{//0
+			CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+		CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+	CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+	CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+		CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+			CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black
+},
+{//1
+			CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+		CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+	CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Blue,CRGB::Black,CRGB::Black,CRGB::Black,
+	CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+		CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+			CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black
+},
+{//2
+			CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+		CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+	CRGB::Black,CRGB::Black,CRGB::Green,CRGB::Green,CRGB::Black,CRGB::Black,
+CRGB::Black,CRGB::Black,CRGB::Green,CRGB::Blue,CRGB::Green,CRGB::Black,CRGB::Black,
+	CRGB::Black,CRGB::Black,CRGB::Green,CRGB::Green,CRGB::Black,CRGB::Black,
+		CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+			CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black
+},
+{//3
+			CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black,
+		CRGB::Black,CRGB::Yellow,CRGB::Yellow,CRGB::Yellow,CRGB::Black,
+	CRGB::Black,CRGB::Yellow,CRGB::Green,CRGB::Green,CRGB::Yellow,CRGB::Black,
+CRGB::Black,CRGB::Yellow,CRGB::Green,CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Black,
+	CRGB::Black,CRGB::Yellow,CRGB::Green,CRGB::Green,CRGB::Yellow,CRGB::Black,
+		CRGB::Black,CRGB::Yellow,CRGB::Yellow,CRGB::Yellow,CRGB::Black,
+			CRGB::Black,CRGB::Black,CRGB::Black,CRGB::Black
+},
+// {//4
+// 			CRGB::Orange  ,CRGB::Orange,CRGB::Orange,CRGB::Orange,
+// 		CRGB::Orange,CRGB::Yellow,CRGB::Yellow,CRGB::Yellow,CRGB::Orange,
+// 	CRGB::Orange,CRGB::Yellow,CRGB::Green,CRGB::Green,CRGB::Yellow,CRGB::Orange,
+// CRGB::Orange,CRGB::Yellow,CRGB::Green,CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,
+// 	CRGB::Orange,CRGB::Yellow,CRGB::Green,CRGB::Green,CRGB::Yellow,CRGB::Orange,
+// 		CRGB::Orange,CRGB::Yellow,CRGB::Yellow,CRGB::Yellow,CRGB::Orange,
+// 			CRGB::Orange,CRGB::Orange,CRGB::Orange,CRGB::Orange
+// },
+{//4
+			CRGB::Magenta  ,CRGB::Magenta,CRGB::Magenta,CRGB::Magenta,
+		CRGB::Magenta,CRGB::Yellow,CRGB::Yellow,CRGB::Yellow,CRGB::Magenta,
+	CRGB::Magenta,CRGB::Yellow,CRGB::Green,CRGB::Green,CRGB::Yellow,CRGB::Magenta,
+CRGB::Magenta,CRGB::Yellow,CRGB::Green,CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Magenta,
+	CRGB::Magenta,CRGB::Yellow,CRGB::Green,CRGB::Green,CRGB::Yellow,CRGB::Magenta,
+		CRGB::Magenta,CRGB::Yellow,CRGB::Yellow,CRGB::Yellow,CRGB::Magenta,
+			CRGB::Magenta,CRGB::Magenta,CRGB::Magenta,CRGB::Magenta
+},
+{//5
+			CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,
+		CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,
+	CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,
+CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,
+	CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,
+		CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red,
+			CRGB::Red,CRGB::Red,CRGB::Red,CRGB::Red
+}
+};
+void hex_led(int level) {
+  if(level>5) level = 5;
+  for(int i=0;i<NUM_LEDS;i++) leds[i] =  hex_color_table[level][i];  
+  FastLED.show();
+}
+// void hex_led(int level) {
+//   if(level>5) level = 5;
+//   clear_led_buff();
+//   if(level>0) fill_led_buff(color_table[level-1]);
+//   FastLED.show();
+// }
+#endif
 #else
 void turn_off_led() {}
 // void fill_led_buff(CRGB color) {}
@@ -160,8 +246,12 @@ void lipsync() {
   avatar.setMouthOpenRatio(ratio);
 #ifdef USE_FASTLED
    int led_level = (int)(ratio*5.0);
+#ifdef USE_HEX_LED
+   hex_led(led_level);
+#else
    if(led_level>NUM_LEDS/2) led_level = NUM_LEDS/2;
    level_led(led_level, led_level);
+#endif
 #endif    
 }
 
@@ -259,11 +349,20 @@ void setup()
   else
   if (M5.getBoard() == m5::board_t::board_M5StackCore2)
   {
+#ifdef USE_HEX_LED
+    FastLED.addLeds<SK6812, GPIO_NUM_32, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
+#else
     FastLED.addLeds<SK6812, GPIO_NUM_25, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
+#endif
   }
-  FastLED.setBrightness(20);
+  FastLED.setBrightness(10);
+#ifdef USE_HEX_LED
+  hex_led(4);
+#else
   level_led(5, 5);
+#endif
   FastLED.show();
+  delay(500);
 #endif
 }
 
