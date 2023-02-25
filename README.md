@@ -16,7 +16,6 @@ m5stack-avatar-mic-led <https://github.com/robo8080/m5stack-avatar-mic-led><br>
 - ~~M5StickCPlus~~
 - ~~ATOMS3 + PDMUnit~~
 - [M5Stack用NeoPixel互換LED搭載 HEXボード](https://www.switch-science.com/products/6058 "Title") (必要に応じて)<br>
-<br>
 - ステレオ対応追加分  ※現状Core2のみ またM-BUSに直接接続する必要があります<br>
     8LEDx2<br>
       秋月 マイコン内蔵RGBLED 8LEDスティック [AE-WS2812B-STICK8] x2<br>
@@ -28,7 +27,7 @@ m5stack-avatar-mic-led <https://github.com/robo8080/m5stack-avatar-mic-led><br>
       https://akizukidenshi.com/catalog/g/gK-15577/  (またはPDM出力可能でデータタイミングの変更可能なマイクの相当品)<br>
       モジュール上のジャンパーを1つはJ1をはんだでショート(向かって左マイク)、もう1つはJ2をショートします(向かって右マイク)<br>
       そして2つを同じ様にVDDを3.3V(注:5Vに繋ぐと壊れます),GNDをGND,CLKをGPIO0にDATをGPIO34に接続します<br>
-    (なおこれらのデバイスが接続可能なｽﾀｯｸﾁｬﾝ用改変基板のデータをのちに公開する予定です)<br>
+      (なおこれらのデバイスが接続可能なｽﾀｯｸﾁｬﾝ用改変基板のデータをのちに公開する予定です)<br>
 <br>
     8LEDx2 を無効にするにはソース16行目「#define USE_STICK8X2」をコメントにしてください<br>
     ステレオ対応を無効にするにはソース19行目「#define STEREO」をコメントにしてください<br>
@@ -60,5 +59,5 @@ ArduinoIDEの場合は下記のように名前を変更してください。
 # ライブラリ
 - M5Stack-Avatar v0.8.2
 - M5Unified v0.1.1
-  FastLED v3.5.0
+- FastLED v3.5.0
 
