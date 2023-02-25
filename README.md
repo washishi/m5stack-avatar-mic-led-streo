@@ -28,7 +28,7 @@ m5stack-avatar-mic-led <https://github.com/robo8080/m5stack-avatar-mic-led><br>
       もう1つはJ2をショートします(向かって右マイク)<br>
       そして2つを同じ様にVDDを3.3V(注:5Vに繋ぐと壊れます),GNDをGND<br>
       CLKをGPIO0にDATをGPIO34に接続します<br>
-    (なおこれらのデバイスが接続可能なｽﾀｯｸﾁｬﾝ用改変基板のデータをのちに公開する予定です)<br>
+  (なおこれらのデバイスが接続可能なｽﾀｯｸﾁｬﾝ用改変基板のデータをのちに公開する予定です)<br>
 <br>
     8LEDx2 を無効にするにはソース16行目「#define USE_STICK8X2」をコメントにしてください<br>
     ステレオ対応を無効にするにはソース19行目「#define STEREO」をコメントにしてください<br>
