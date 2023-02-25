@@ -16,12 +16,12 @@ m5stack-avatar-mic-led <https://github.com/robo8080/m5stack-avatar-mic-led><br>
 - ~~ATOMS3 + PDMUnit~~
 - [M5Stack用NeoPixel互換LED搭載 HEXボード](https://www.switch-science.com/products/6058 "Title") (必要に応じて)<br>
 - ステレオ対応追加分  ※現状Core2のみ またM-BUSに直接接続する必要があります<br>
-    8LEDx2<br>
+    - 8LEDx2<br>
       秋月 マイコン内蔵RGBLED 8LEDスティック [AE-WS2812B-STICK8] x2<br>
       https://akizukidenshi.com/catalog/g/gM-14307/  (またはフルカラーLED WS2812を8個搭載した相当品)<br>
-      8LEDスティック2つの+5V,GNDをそれぞれ接続し1つ目のDINにGPIO25を接続、DOUTに2つ目のDINを接続します<br>
+      8LEDスティック2つの+5V,GNDをそれぞれ接続し1つ目のDINにGPIO25をDOUTに2つ目のDINを接続します<br>
       (2つ目のDOUTは未接続) 1つ目が向かって右、2つ目が向かって左になります<br>
-    マイクx2<br>
+    - マイクx2<br>
       秋月 SPH0641LU4H使用 超広帯域マイクモジュールキット [AE-SPH0641LU4H-1-8] x2<br>
       https://akizukidenshi.com/catalog/g/gK-15577/  (またはPDM出力可能でデータタイミングの変更可能なマイクの相当品)<br>
       モジュール上のジャンパーを1つはJ1をはんだでショート(向かって左マイク)、もう1つはJ2をショートします(向かって右マイク)<br>
