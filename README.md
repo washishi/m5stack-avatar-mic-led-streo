@@ -1,7 +1,8 @@
 # m5stack-avatar-mic-led-streo
 マイクを使ったM5Stack Avatarの例です。<br>
 音に合わせてAvatarが口パクしたり、傾いたりします、LEDを光らせたりします。<br>
-mongonta0716さんの「m5stack-avatar-mic」に robo8080さんがLEDを光らす機能を追加した「m5stack-avatar-mic-led」にマイクと8LEDステックをそれぞれ2つ接続してステレオに対応しました<br>
+mongonta0716さんの「m5stack-avatar-mic」に robo8080さんがLEDを光らす機能を追加した<br>
+「m5stack-avatar-mic-led」にマイクと8LEDステックをそれぞれ2つ接続してステレオに対応しました<br>
 
 オリジナルはこちらです。<br>
 m5stack-avatar-mic     <https://github.com/mongonta0716/m5stack-avatar-mic><br>
