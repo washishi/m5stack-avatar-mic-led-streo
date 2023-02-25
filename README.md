@@ -23,10 +23,12 @@ m5stack-avatar-mic-led <https://github.com/robo8080/m5stack-avatar-mic-led><br>
       (2つ目のDOUTは未接続) 1つ目が向かって右、2つ目が向かって左になります<br>
     - マイクx2<br>
       秋月 SPH0641LU4H使用 超広帯域マイクモジュールキット [AE-SPH0641LU4H-1-8] x2<br>
-      https://akizukidenshi.com/catalog/g/gK-15577/  (またはPDM出力可能でデータタイミングの変更可能なマイクの相当品)<br>
-      モジュール上のジャンパーを1つはJ1をはんだでショート(向かって左マイク)、もう1つはJ2をショートします(向かって右マイク)<br>
-      そして2つを同じ様にVDDを3.3V(注:5Vに繋ぐと壊れます),GNDをGND,CLKをGPIO0にDATをGPIO34に接続します<br>
-      (なおこれらのデバイスが接続可能なｽﾀｯｸﾁｬﾝ用改変基板のデータをのちに公開する予定です)<br>
+      https://akizukidenshi.com/catalog/g/gK-15577/  (またはPDM出力可能なマイクの相当品)<br>
+      モジュール上のジャンパーを1つはJ1をはんだでショート(向かって左マイク)、<br>
+      もう1つはJ2をショートします(向かって右マイク)<br>
+      そして2つを同じ様にVDDを3.3V(注:5Vに繋ぐと壊れます),GNDをGND<br>
+      CLKをGPIO0にDATをGPIO34に接続します<br>
+    (なおこれらのデバイスが接続可能なｽﾀｯｸﾁｬﾝ用改変基板のデータをのちに公開する予定です)<br>
 <br>
     8LEDx2 を無効にするにはソース16行目「#define USE_STICK8X2」をコメントにしてください<br>
     ステレオ対応を無効にするにはソース19行目「#define STEREO」をコメントにしてください<br>
