@@ -1,6 +1,6 @@
 // Copyright(c) 2023 Takao Akaki
 
-
+#include <stdlib.h>
 #include <M5Unified.h>
 #include <Avatar.h>
 #include "fft.hpp"
@@ -10,6 +10,13 @@
 #define USE_FASTLED
 // HEX LEDをレベルメータとして使用する;
 //#define USE_HEX_LED
+
+// 秋月	マイコン内蔵RGB LED 8LEDスティック 
+// [AE-WS2812B-STICK8] を2つ使用する
+#define USE_STICK8X2
+
+// マイク2つでステレオ対応にする
+#define STEREO
 
 #ifdef USE_MIC
   // ---------- Mic sampling ----------
@@ -38,7 +45,11 @@
 #ifdef USE_HEX_LED
   #define NUM_LEDS 37
 #else
-  #define NUM_LEDS 10
+  #ifdef USE_STICK8X2
+    #define NUM_LEDS 16
+  #else
+    #define NUM_LEDS 10
+  #endif
 #endif
   // #if defined(ARDUINO_M5STACK_Core2)
   // #define DATA_PIN 25
@@ -66,15 +77,38 @@ void clear_led_buff() {
 }
 
 #ifndef USE_HEX_LED
-CRGB led_table[NUM_LEDS/2] = {CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,CRGB::Red};
-//CRGB color_table[5] = {CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,CRGB::Red};
+  #ifdef USE_STICK8X2
+    CRGB led_table[NUM_LEDS/2] = {CRGB::Purple,CRGB::MediumPurple,CRGB::Blue,CRGB::Green,CRGB::LimeGreen,CRGB::Yellow,CRGB::Orange,CRGB::Red};
+  #else
+    CRGB led_table[NUM_LEDS/2] = {CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,CRGB::Red};
+  //CRGB color_table[5] = {CRGB::Blue,CRGB::Green,CRGB::Yellow,CRGB::Orange,CRGB::Red};
+  #endif
+
 void level_led(int level1, int level2) {
   if(level1>NUM_LEDS/2) level1 = NUM_LEDS/2;
   if(level2>NUM_LEDS/2) level2 = NUM_LEDS/2;
   clear_led_buff();
+  // LEDの順番
+  //
+  // M5GO Bottom2
+  //    下 ------------------ 上
+  // 右 LED4 LED3 LED2 LED1 LED0
+  // 左 LED5 LED6 LED7 LED8 LED9
+  //
+  // 秋月	マイコン内蔵RGB LED 8LEDスティック x2
+  //    下 ---------------------------------------- 上
+  // 右 LED0 LED 1 LED2  LED3  LED4  LED5  LED6  LED7
+  // 左 LED8 LED 9 LED10 LED11 LED12 LED13 LED14 LED15
+  
+  // 右LED 
   for(int i=0;i<level1;i++){
+#ifndef USE_STICK8X2
     leds[NUM_LEDS/2-1-i] = led_table[i];
+#else
+    leds[i] = led_table[i];
+#endif
   }
+  // 左LED
   for(int i=0;i<level2;i++){
     leds[i+NUM_LEDS/2] = led_table[i];
   }
@@ -184,7 +218,11 @@ void initI2S()  // Init I2S.  初始化I2S
             I2S_BITS_PER_SAMPLE_16BIT,  // Fixed 12-bit stereo MSB.
                                         // 固定为12位立体声MSB
         .channel_format =
+#ifdef STEREO
+            I2S_CHANNEL_FMT_RIGHT_LEFT,
+#else
             I2S_CHANNEL_FMT_ALL_RIGHT,  // Set the channel format.  设置频道格式
+#endif
 #if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4, 1, 0)
         .communication_format =
             I2S_COMM_FORMAT_STAND_I2S,  // Set the format of the communication.
@@ -210,10 +248,15 @@ void initI2S()  // Init I2S.  初始化I2S
 
     i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
     i2s_set_pin(I2S_NUM_0, &pin_config);
+#ifdef STEREO    
+    i2s_set_clk(I2S_NUM_0, 44100, I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_STEREO);
+#else
     i2s_set_clk(I2S_NUM_0, 44100, I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_MONO);
+#endif
 }
 
-int8_t i2s_readraw_buff[1024];
+//int8_t i2s_readraw_buff[1024];
+int16_t *i2s_readraw_buff = (int16_t *)calloc(1, 1024);
 uint8_t fft_dis_buff[161][80] = {0};
 uint16_t posData              = 160;
 
@@ -221,14 +264,35 @@ void lipsync() {
   
   size_t bytesread;
   uint64_t level = 0;
-  i2s_read(I2S_NUM_0, (char *)i2s_readraw_buff, 1024, &bytesread,
+//i2s_read(I2S_NUM_0, (char *)i2s_readraw_buff, 1024, &bytesread,
+  i2s_read(I2S_NUM_0, i2s_readraw_buff, 1024, &bytesread,
               (100 / portTICK_RATE_MS));
-  adcBuffer = (int16_t *)i2s_readraw_buff;
-  fft.exec(adcBuffer);
+//Serial.printf("RAW DATA  R:%6d  L:%6d\n",i2s_readraw_buff[0], i2s_readraw_buff[1]);
+
+//adcBuffer = (int16_t *)i2s_readraw_buff;
+//fft.exec(adcBuffer);
+  fft.exec(i2s_readraw_buff);
   for (size_t bx=5;bx<=60;++bx) {
     int32_t f = fft.get(bx);
     level += abs(f);
   }
+#ifdef STEREO
+  uint64_t level_R = 0;
+  uint64_t level_L = 0;
+  fft.exec(i2s_readraw_buff, 1);
+  for (size_t bx=5;bx<=60;++bx) {
+    int32_t f = fft.get(bx);
+    level_R += abs(f);
+  }
+  fft.exec(i2s_readraw_buff, 2);
+  for (size_t bx=5;bx<=60;++bx) {
+    int32_t f = fft.get(bx);
+    level_L += abs(f);
+  }
+//Serial.printf("LEVEL  MONO:%6ld", level); 
+//Serial.printf("  R:%6ld", level_R);
+//Serial.printf("  L:%6ld\n", level_L);
+#endif
 
   //Serial.printf("level:%d\n", level) ;         // lipsync_maxを調整するときはこの行をコメントアウトしてください。
   float ratio = (float)((level >> 9)/lipsync_max);
@@ -245,13 +309,22 @@ void lipsync() {
   }
   avatar.setMouthOpenRatio(ratio);
 #ifdef USE_FASTLED
-   int led_level = (int)(ratio*5.0);
-#ifdef USE_HEX_LED
+// int led_level = (int)(ratio*5.0);
+   int led_level = (int)(ratio*(NUM_LEDS/2));
+  #ifdef USE_HEX_LED
    hex_led(led_level);
-#else
-   if(led_level>NUM_LEDS/2) led_level = NUM_LEDS/2;
+  #else
+    #ifndef STEREO
+// if(led_level>NUM_LEDS/2) led_level = NUM_LEDS/2; // level_led()で同じことをしてるのでコメント
    level_led(led_level, led_level);
-#endif
+    #else
+   float ratio_L = (float)((level_L >> 9)/lipsync_max);
+   float ratio_R = (float)((level_R >> 9)/lipsync_max);
+   int led_level_L = (int)(ratio_L*(NUM_LEDS/2));
+   int led_level_R = (int)(ratio_R*(NUM_LEDS/2));
+   level_led(led_level_L, led_level_R);  // マイク(聞く側の左右)とLED(見る側の左右)が逆になるので左右逆に渡す
+    #endif 
+  #endif
 #endif    
 }
 
@@ -309,6 +382,14 @@ void setup()
       pin_data = 34;
       break;
 
+    case m5::board_t::board_M5Stack:
+      scale = 1.0f;
+      position_x = 0;
+      position_y = 0;
+      display_rotation = 1;
+      pin_clk  = 0;
+      pin_data = 34;  
+      break;
       
     defalut:
       Serial.println("Invalid board.");
@@ -359,7 +440,8 @@ void setup()
 #ifdef USE_HEX_LED
   hex_led(4);
 #else
-  level_led(5, 5);
+//level_led(5, 5);
+  level_led(NUM_LEDS/2, NUM_LEDS/2);
 #endif
   FastLED.show();
   delay(500);
