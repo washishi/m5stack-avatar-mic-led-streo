@@ -15,25 +15,25 @@ m5stack-avatar-mic-led <https://github.com/robo8080/m5stack-avatar-mic-led><br>
 - ~~M5StickCPlus~~
 - ~~ATOMS3 + PDMUnit~~
 - [M5Stack用NeoPixel互換LED搭載 HEXボード](https://www.switch-science.com/products/6058 "Title") (必要に応じて)<br>
-- ステレオ対応追加分  ※現状Core2のみ またM-BUSに直接接続する必要があります<br>
+- ステレオ対応追加分  ※現状Core2のみ またM-BUSに直接接続する必要があります
     - 8LEDx2<br>
-      秋月 マイコン内蔵RGBLED 8LEDスティック [AE-WS2812B-STICK8] x2<br>
-      https://akizukidenshi.com/catalog/g/gM-14307/  (またはフルカラーLED WS2812を8個搭載した相当品)<br>
+      秋月 マイコン内蔵RGBLED 8LEDスティック [AE-WS2812B-STICK8](https://akizukidenshi.com/catalog/g/gM-14307/) x2<br>
+      (またはフルカラーLED WS2812を8個搭載した相当品)<br>
       8LEDスティック2つの+5V,GNDをそれぞれ接続し1つ目のDINにGPIO25をDOUTに2つ目のDINを接続します<br>
       (2つ目のDOUTは未接続) 1つ目が向かって右、2つ目が向かって左になります<br>
+      もし8LEDx2 を無効にする場合はソース16行目「#define USE_STICK8X2」をコメントにしてください<br>
+      8LEDx2 と LED HEXボードとの併用はソフトで対応していないためできません<br>
     - マイクx2<br>
-      秋月 SPH0641LU4H使用 超広帯域マイクモジュールキット [AE-SPH0641LU4H-1-8] x2<br>
-      https://akizukidenshi.com/catalog/g/gK-15577/  (またはPDM出力可能なマイクの相当品)<br>
+      秋月 SPH0641LU4H使用 超広帯域マイクモジュールキット [AE-SPH0641LU4H-1-8](https://akizukidenshi.com/catalog/g/gK-15577/) x2<br>
+      (またはPDM出力可能でデータ出力タイミングが選択可能なマイクの相当品)<br>
       モジュール上のジャンパーを1つはJ1をはんだでショート(向かって左マイク)、<br>
       もう1つはJ2をショートします(向かって右マイク)<br>
-      そして2つを同じ様にVDDを3.3V(注:5Vに繋ぐと壊れます),GNDをGND<br>
+      そして2つ一緒にVDDを3.3V(注:5Vに繋ぐと壊れます),GNDをGND<br>
       CLKをGPIO0にDATをGPIO34に接続します<br>
-  (なおこれらのデバイスが接続可能なｽﾀｯｸﾁｬﾝ用改変基板のデータをのちに公開する予定です)<br>
-<br>
-    8LEDx2 を無効にするにはソース16行目「#define USE_STICK8X2」をコメントにしてください<br>
-    ステレオ対応を無効にするにはソース19行目「#define STEREO」をコメントにしてください<br>
-    (上記2つをコメントするとオリジナルと同等になります)<br>
-    なお 8LEDx2 と LED HEXボードとの併用はソフトで対応していないためできません<br>
+      もしマイクのステレオ対応を無効にするにはソース19行目「#define STEREO」をコメントにしてください
+      なおステレオ設定のままでマイクを1つしか繋いでなくても動作はします
+     
+   (これらのデバイスが接続可能な [ｽﾀｯｸﾁｬﾝ](https://protopedia.net/prototype/2345)用 改変基板のデータをのちに公開する予定です)<br>
 <br>
 # M5Stack用NeoPixel互換LED搭載 HEXボードを使用する場合<br>
 1, LED HEXボードをPORT Aへ接続してください。<br>
