@@ -303,7 +303,27 @@ void lipsync() {
     ratio = 1.3f;
   }
   if ((millis() - last_rotation_msec) > 350) {
+#ifdef STEREO
+// ステレオ対応の場合はランダムではなく左右の音量差が一定以上ある場合に顔を傾ける
+    int direction = 0;
+    if (level_R > level_L * 1.1 ) {
+      if (level_R > level_L * 1.2 ) {
+        direction = -2; 
+      } else {
+        direction = -1; 
+      }
+    } else {
+      if (level_L > level_R * 1.1 ){
+        if (level_L > level_R * 1.2 ){
+          direction = 2;
+        } else {
+          direction = 1;
+        }
+      }  
+    } 
+#else
     int direction = random(-2, 2);
+#endif
     avatar.setRotation(direction * 10 * ratio);
     last_rotation_msec = millis();
   }
