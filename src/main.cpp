@@ -13,10 +13,12 @@
 
 // 秋月	マイコン内蔵RGB LED 8LEDスティック 
 // [AE-WS2812B-STICK8] を2つ使用する
-#define USE_STICK8X2
+//#define USE_STICK8X2
 
 // マイク2つでステレオ対応にする
 #define STEREO
+// 2つ目のマイクとしてPDM UNITを利用する(M5GO Bottom2のマイクと併用でステレオ対応にできます)
+#define PDM_UNIT
 
 #ifdef USE_MIC
   // ---------- Mic sampling ----------
@@ -29,7 +31,7 @@
   #define GAIN_FACTOR 3
   uint8_t BUFFER[READ_LEN] = {0};
 
-  int16_t *adcBuffer = NULL;
+  //int16_t *adcBuffer = NULL;
   static fft_t fft;
   static constexpr size_t WAVE_SIZE = 320;
   static int16_t raw_data[WAVE_SIZE * 2];
@@ -207,56 +209,69 @@ uint8_t palette_index = 0;
 
 uint32_t last_rotation_msec = 0;
 
-void initI2S()  // Init I2S.  初始化I2S
+void initI2S(const int8_t s = 0)  // Init I2S.  初始化I2S
 {
-    i2s_config_t i2s_config = {
-        .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX |
-                             I2S_MODE_PDM),  // Set the I2S operating mode.
-                                             // 设置I2S工作模式
-        .sample_rate = 44100,  // Set the I2S sampling rate.  设置I2S采样率
-        .bits_per_sample =
-            I2S_BITS_PER_SAMPLE_16BIT,  // Fixed 12-bit stereo MSB.
-                                        // 固定为12位立体声MSB
-        .channel_format =
-#ifdef STEREO
-            I2S_CHANNEL_FMT_RIGHT_LEFT,
+  i2s_config_t i2s_config;
+  i2s_pin_config_t pin_config;
+  switch (s)
+  {
+  case 0: // I2S init with pin config for M5GO Bottom2 or Core2 Ext.
+    Serial.printf("init 0\n");
+    i2s_config = {
+      .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX |
+                           I2S_MODE_PDM), // Set the I2S operating mode.
+                                          // 设置I2S工作模式
+      .sample_rate = 44100,               // Set the I2S sampling rate.  设置I2S采样率
+      .bits_per_sample =
+          I2S_BITS_PER_SAMPLE_16BIT, // Fixed 12-bit stereo MSB.
+                                     // 固定为12位立体声MSB
+      .channel_format =
+#if defined(STEREO) && not defined(PDM_UNIT)
+          I2S_CHANNEL_FMT_RIGHT_LEFT,
 #else
-            I2S_CHANNEL_FMT_ALL_RIGHT,  // Set the channel format.  设置频道格式
+          I2S_CHANNEL_FMT_ALL_RIGHT, // Set the channel format.  设置频道格式
 #endif
 #if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4, 1, 0)
-        .communication_format =
-            I2S_COMM_FORMAT_STAND_I2S,  // Set the format of the communication.
-#else                                   // 设置通讯格式
-        .communication_format = I2S_COMM_FORMAT_I2S,
+      .communication_format =
+          I2S_COMM_FORMAT_STAND_I2S, // Set the format of the communication.
+#else                                // 设置通讯格式
+      .communication_format = I2S_COMM_FORMAT_I2S,
 #endif
-        .intr_alloc_flags =
-            ESP_INTR_FLAG_LEVEL1,  // Set the interrupt flag.  设置中断的标志
-        .dma_buf_count = 2,        // DMA buffer count.  DMA缓冲区计数
-        .dma_buf_len   = 128,      // DMA buffer length.  DMA缓冲区长度
+      .intr_alloc_flags =
+          ESP_INTR_FLAG_LEVEL1, // Set the interrupt flag.  设置中断的标志
+      .dma_buf_count = 2,       // DMA buffer count.  DMA缓冲区计数
+      .dma_buf_len = 128,       // DMA buffer length.  DMA缓冲区长度
     };
+    i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
 
-    i2s_pin_config_t pin_config;
-
+ case 1: // pin config only  for M5GO Bottom2 or Core2 Ext.
 #if (ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4, 3, 0))
     pin_config.mck_io_num = I2S_PIN_NO_CHANGE;
 #endif
-
-    pin_config.bck_io_num   = I2S_PIN_NO_CHANGE;
-    pin_config.ws_io_num    = pin_clk;
+    pin_config.bck_io_num = I2S_PIN_NO_CHANGE;
+    pin_config.ws_io_num = pin_clk;
     pin_config.data_out_num = I2S_PIN_NO_CHANGE;
-    pin_config.data_in_num  = pin_data;
-
-    i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
+    pin_config.data_in_num = pin_data;
     i2s_set_pin(I2S_NUM_0, &pin_config);
-#ifdef STEREO    
-    i2s_set_clk(I2S_NUM_0, 44100, I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_STEREO);
-#else
-    i2s_set_clk(I2S_NUM_0, 44100, I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_MONO);
+    break; 
+ case 2: // pin config only  for PDM_UNIT(PortA)
+#if (ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4, 3, 0))
+    pin_config.mck_io_num = I2S_PIN_NO_CHANGE;
 #endif
+    pin_config.bck_io_num = I2S_PIN_NO_CHANGE;
+    pin_config.ws_io_num = 33;
+    pin_config.data_out_num = I2S_PIN_NO_CHANGE;
+    pin_config.data_in_num = 32;
+    i2s_set_pin(I2S_NUM_0, &pin_config);
+    break;
+  }
 }
 
 //int8_t i2s_readraw_buff[1024];
 int16_t *i2s_readraw_buff = (int16_t *)calloc(1, 1024);
+#ifdef PDM_UNIT
+int16_t *i2s_readraw_buff2 = (int16_t *)calloc(1, 1024);
+#endif
 uint8_t fft_dis_buff[161][80] = {0};
 uint16_t posData              = 160;
 
@@ -264,21 +279,43 @@ void lipsync() {
   
   size_t bytesread;
   uint64_t level = 0;
-//i2s_read(I2S_NUM_0, (char *)i2s_readraw_buff, 1024, &bytesread,
+  #ifdef PDM_UNIT
+  //pin configを切り替え　その後暫くデータが乱れるのでダミーで少し読み込んでから再度読み込み
+  initI2S(1);
+  i2s_read(I2S_NUM_0, i2s_readraw_buff, 512, &bytesread,
+                (100 / portTICK_RATE_MS));
+  #endif
   i2s_read(I2S_NUM_0, i2s_readraw_buff, 1024, &bytesread,
+                (100 / portTICK_RATE_MS));
+  //Serial.printf("M5GO Bottom2    %6d  %6d\n",i2s_readraw_buff[0], i2s_readraw_buff[1]);
+  
+#ifdef PDM_UNIT
+  uint64_t level2 = 0;
+  //pin configを切り替え　その後暫くデータが乱れるのでダミーで少し読み込んでから再度読み込み
+  initI2S(2);
+  i2s_read(I2S_NUM_0, i2s_readraw_buff2, 512, &bytesread,
               (100 / portTICK_RATE_MS));
-//Serial.printf("RAW DATA  R:%6d  L:%6d\n",i2s_readraw_buff[0], i2s_readraw_buff[1]);
-
-//adcBuffer = (int16_t *)i2s_readraw_buff;
-//fft.exec(adcBuffer);
+  i2s_read(I2S_NUM_0, i2s_readraw_buff2, 1024, &bytesread,
+              (100 / portTICK_RATE_MS));
+  //Serial.printf("PDM_UNIT(PortA) %6d  %6d\n",i2s_readraw_buff2[0], i2s_readraw_buff2[1]);
+#endif
   fft.exec(i2s_readraw_buff);
   for (size_t bx=5;bx<=60;++bx) {
     int32_t f = fft.get(bx);
     level += abs(f);
   }
+#ifdef PDM_UNIT
+  fft.exec(i2s_readraw_buff2);
+  for (size_t bx=5;bx<=60;++bx) {
+    int32_t f = fft.get(bx);
+    level2 += abs(f);
+  }
+#endif
+
 #ifdef STEREO
   uint64_t level_R = 0;
   uint64_t level_L = 0;
+  #ifndef PDM_UNIT
   fft.exec(i2s_readraw_buff, 1);
   for (size_t bx=5;bx<=60;++bx) {
     int32_t f = fft.get(bx);
@@ -289,10 +326,17 @@ void lipsync() {
     int32_t f = fft.get(bx);
     level_L += abs(f);
   }
-//Serial.printf("LEVEL  MONO:%6ld", level); 
-//Serial.printf("  R:%6ld", level_R);
-//Serial.printf("  L:%6ld\n", level_L);
+  #else
+  level_L = level;
+  level_R = level2;
+  #endif
 #endif
+#ifdef PDM_UNIT
+  if (level < level2) level=level2;
+#endif
+  //Serial.printf("LEVEL  MONO:%6ld", level); 
+  //Serial.printf("  R:%6ld", level_R);
+  //Serial.printf("  L:%6ld\n", level_L);
 
   //Serial.printf("level:%d\n", level) ;         // lipsync_maxを調整するときはこの行をコメントアウトしてください。
   float ratio = (float)((level >> 9)/lipsync_max);
@@ -329,13 +373,11 @@ void lipsync() {
   }
   avatar.setMouthOpenRatio(ratio);
 #ifdef USE_FASTLED
-// int led_level = (int)(ratio*5.0);
    int led_level = (int)(ratio*(NUM_LEDS/2));
   #ifdef USE_HEX_LED
    hex_led(led_level);
   #else
     #ifndef STEREO
-// if(led_level>NUM_LEDS/2) led_level = NUM_LEDS/2; // level_led()で同じことをしてるのでコメント
    level_led(led_level, led_level);
     #else
    float ratio_L = (float)((level_L >> 9)/lipsync_max);

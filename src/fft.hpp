@@ -46,7 +46,6 @@ public:
     }
   }
 
-//void exec(const int16_t* in)
   void exec(const int16_t* in, int8_t mode = 0) // mode 0:mono 1:LEFT 2:RIGHT
   {
     memset(_fi, 0, sizeof(_fi));
