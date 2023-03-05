@@ -327,8 +327,8 @@ void lipsync() {
     level_L += abs(f);
   }
   #else
-  level_L = level;
-  level_R = level2;
+  level_L = level2;
+  level_R = level;
   #endif
 #endif
 #ifdef PDM_UNIT
@@ -350,15 +350,15 @@ void lipsync() {
 #ifdef STEREO
 // ステレオ対応の場合はランダムではなく左右の音量差が一定以上ある場合に顔を傾ける
     int direction = 0;
-    if (level_R > level_L * 1.1 ) {
-      if (level_R > level_L * 1.2 ) {
+    if (level_L > level_R * 1.1 ) {
+      if (level_L > level_R * 1.2 ) {
         direction = -2; 
       } else {
         direction = -1; 
       }
     } else {
-      if (level_L > level_R * 1.1 ){
-        if (level_L > level_R * 1.2 ){
+      if (level_R > level_L * 1.1 ){
+        if (level_R > level_L * 1.2 ){
           direction = 2;
         } else {
           direction = 1;
@@ -384,7 +384,7 @@ void lipsync() {
    float ratio_R = (float)((level_R >> 9)/lipsync_max);
    int led_level_L = (int)(ratio_L*(NUM_LEDS/2));
    int led_level_R = (int)(ratio_R*(NUM_LEDS/2));
-   level_led(led_level_L, led_level_R);  // マイク(聞く側の左右)とLED(見る側の左右)が逆になるので左右逆に渡す
+   level_led(led_level_R,led_level_L);
     #endif 
   #endif
 #endif    
